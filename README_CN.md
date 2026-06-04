@@ -1,7 +1,7 @@
 <div align="center">
 
 <picture>
-    <img src="assets/logo.png" width="320px" style="border: none; box-shadow: none;" alt="OpenSpace Logo">
+    <img src="assets/logo_version_2.png" width="180px" style="border: none; box-shadow: none;" alt="OpenSpace Logo">
 </picture>
 
 ## ✨ OpenSpace：让你的 Agent 更聪明、更省钱、自我进化 ✨
