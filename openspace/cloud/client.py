@@ -287,7 +287,7 @@ class OpenSpaceClient:
         self,
         skill_dir: Path,
         *,
-        visibility: str = "public",
+        visibility: str = "private",  # MOX HARDENED FORK: was "public"
         origin: str = "imported",
         parent_skill_ids: Optional[List[str]] = None,
         tags: Optional[List[str]] = None,

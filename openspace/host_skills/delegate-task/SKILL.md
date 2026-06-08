@@ -83,46 +83,52 @@ Response has `upload_ready: true` → decide whether to upload.
 
 ### upload_skill
 
-Upload a skill to the cloud community. For evolved/fixed skills, metadata is pre-saved — just provide `skill_dir` and `visibility`.
+⚠️ **MOX HARDENED FORK POLICY** ⚠️
+
+**Skills are PRIVATE by default.** Manual review by the user is required
+before any skill is shared publicly. You MUST NOT call `upload_skill` with
+`visibility="public"` on your own initiative. Even a `"private"` upload
+requires the cloud API key (`OPENSPACE_API_KEY`) — which is intentionally
+NOT set in this install — so calls to `upload_skill` will simply fail with
+a cloud-disabled error and the evolved skill will remain in the local DB
+where it belongs.
+
+If `OPENSPACE_PRIVATE_ONLY=true` (the default for Mox), the MCP server
+will reject any `upload_skill` call where `visibility != "private"`.
+
+Upload a skill to the cloud community (only when the user has explicitly
+opted in and provided an API key):
 
 ```
 upload_skill(
   skill_dir="/path/to/skills/weather-api",
-  visibility="public"
-)
-```
-
-For new skills (no auto metadata — defaults apply, but richer metadata improves discoverability):
-
-```
-upload_skill(
-  skill_dir="/path/to/skills/my-new-skill",
-  visibility="public",
-  origin="imported",
-  tags=["weather", "api"],
-  created_by="my-bot",
-  change_summary="Initial upload of weather API skill"
+  visibility="private"   # default; must be set explicitly to "public" by the user
 )
 ```
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
 | `skill_dir` | yes | — | Path to skill directory (must contain SKILL.md) |
-| `visibility` | no | `"public"` | `"public"` or `"private"` |
+| `visibility` | no | `"private"` | `"public"` requires explicit user opt-in |
 | `origin` | no | auto | How the skill was created |
 | `parent_skill_ids` | no | auto | Parent skill IDs |
 | `tags` | no | auto | Tags |
 | `created_by` | no | auto | Creator |
 | `change_summary` | no | auto | What changed |
 
-### When to upload
+### When to upload (HARDENED)
+
+**Default: never auto-upload.** Captured/evolved skills live in the local
+SQLite DB. If the user explicitly asks to share a skill, then:
 
 | Situation | Action |
 |-----------|--------|
-| Skill was originally from the cloud | Upload back as `"public"` — return the improvement to the community |
-| Fix/evolution is generally useful | Upload as `"public"` |
-| Fix/evolution is project-specific | Upload as `"private"`, or skip |
-| User says to share | Upload with the visibility the user wants |
+| User has explicitly enabled cloud sharing (set `OPENSPACE_API_KEY` AND unset `OPENSPACE_PRIVATE_ONLY`) AND asked to share THIS skill | Upload with the visibility the user specified |
+| Anything else | Do NOT upload. Tell the user about the evolved skill, leave it local, let them review and decide. |
+
+This is intentional. Sharing a skill that contains a path, command, or
+phrasing tied to client work would be a data-exposure incident. The
+default is local-only for safety.
 
 ## Notes
 

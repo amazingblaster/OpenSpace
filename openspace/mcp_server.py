@@ -845,7 +845,7 @@ async def fix_skill(
 @mcp.tool()
 async def upload_skill(
     skill_dir: str,
-    visibility: str = "public",
+    visibility: str = "private",
     origin: str | None = None,
     parent_skill_ids: list[str] | None = None,
     tags: list[str] | None = None,
@@ -854,12 +854,17 @@ async def upload_skill(
 ) -> str:
     """Upload a local skill to the cloud.
 
+    MOX HARDENED FORK: visibility defaults to "private".  Setting
+    visibility="public" is rejected when the environment variable
+    OPENSPACE_PRIVATE_ONLY is set to "true" / "1" / "yes".
+
     For evolved skills (from ``execute_task`` or ``fix_skill``), most
     metadata is **pre-saved** in ``.upload_meta.json``.  The bot only
     needs to provide:
 
       - ``skill_dir`` — path to the skill directory
-      - ``visibility`` — "public" or "private"
+      - ``visibility`` — "public" or "private" (private is default;
+                          public requires explicit opt-in)
 
     All other parameters are optional overrides.  If omitted, pre-saved
     values are used.  If no pre-saved values exist, sensible defaults
@@ -881,6 +886,15 @@ async def upload_skill(
         change_summary: Override summary.  Default: from .upload_meta.json.
     """
     try:
+        # MOX HARDENED FORK: refuse public uploads when private-only mode is on.
+        _private_only = os.environ.get("OPENSPACE_PRIVATE_ONLY", "").strip().lower()
+        if _private_only in ("1", "true", "yes", "on") and visibility != "private":
+            return _json_error(
+                "OPENSPACE_PRIVATE_ONLY=true: upload_skill refuses to upload "
+                f"with visibility='{visibility}'. Set visibility='private' "
+                "or unset OPENSPACE_PRIVATE_ONLY to override."
+            )
+
         skill_path = Path(skill_dir)
         if not (skill_path / "SKILL.md").exists():
             return _json_error(f"SKILL.md not found in {skill_dir}")
