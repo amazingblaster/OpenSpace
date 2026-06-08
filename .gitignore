@@ -78,3 +78,9 @@ openspace/skills/*
 node_modules/
 # Frontend local dependency link
 frontend/node_modules
+
+# Mox local install
+.venv-mox/
+.install.log
+.openspace/
+
